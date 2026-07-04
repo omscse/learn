@@ -11,7 +11,7 @@ It's a poor fit for two other situations, though:
 - **CPU-bound work** (image resizing, hashing, parsing huge payloads) ties up the single thread and makes your whole application unresponsive while it runs.
 - **Scaling across CPU cores** — a single Node.js process only ever uses one core for its JavaScript, no matter how many cores the machine has.
 
-Node.js ships three built-in modules to address this: [`child_process`](https://nodejs.org/api/child_process.html), [`worker_threads`](https://nodejs.org/api/worker_threads.html), and [`cluster`](https://nodejs.org/api/cluster.html). They solve overlapping problems in different ways, which is why it's easy to reach for the wrong one. This guide compares them side by side and walks through when to use each.
+Node.js ships three built-in modules to address this: [`node:child_process`](https://nodejs.org/api/child_process.html), [`node:worker_threads`](https://nodejs.org/api/worker_threads.html), and [`node:cluster`](https://nodejs.org/api/cluster.html). They solve overlapping problems in different ways, which is why it's easy to reach for the wrong one. This guide compares them side by side and walks through when to use each.
 
 ## The three options at a glance
 
