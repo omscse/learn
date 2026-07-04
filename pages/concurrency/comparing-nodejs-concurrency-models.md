@@ -16,7 +16,7 @@ Node.js ships three built-in modules to address this: [`child_process`](https://
 ## The three options at a glance
 
 |                  | Runs               | Memory    | Talks via                | Best for                      |
-| ---------------- | ------------------ | --------- | ------------------------ | ----------------------------- |
+| :--------------- | :----------------- | :-------- | :----------------------- | :---------------------------- |
 | `child_process`  | Separate process   | Isolated  | stdio, or IPC (`fork()`) | Running external programs     |
 | `worker_threads` | Separate thread    | Shareable | `postMessage()`          | CPU-bound JS work             |
 | `cluster`        | Multiple processes | Isolated  | IPC                      | Scaling a server across cores |
@@ -30,7 +30,7 @@ Use `child_process` when you need to run another program — a shell command, a 
 ### `spawn`, `exec`, `execFile`, and `fork`
 
 | Method       | Description                                  | Use case                       |
-| ------------ | -------------------------------------------- | ------------------------------ |
+| :----------- | :------------------------------------------- | :----------------------------- |
 | `spawn()`    | Streams stdout/stderr                        | Long-running, large output     |
 | `exec()`     | Buffers full output via a shell              | Short commands, small output   |
 | `execFile()` | Like `exec()`, no shell                      | Running a known binary safely  |
@@ -94,7 +94,7 @@ process.on('message', msg => {
 `worker_threads` was added to let you run JavaScript in parallel, in threads within the _same_ process, specifically to move CPU-bound work off the main thread without blocking it. Unlike `child_process`, workers share the same process — no OS-level process to spin up, and no fully separate memory space.
 
 |                  | Worker Threads                    | Child Process         |
-| ---------------- | --------------------------------- | --------------------- |
+| :--------------- | :-------------------------------- | :-------------------- |
 | Context          | Same process                      | Separate process      |
 | Memory           | Shareable via `SharedArrayBuffer` | Isolated              |
 | Startup overhead | Low                               | Higher                |
