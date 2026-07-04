@@ -15,11 +15,11 @@ Node.js ships three built-in modules to address this: [`child_process`](https://
 
 ## The three options at a glance
 
-|                  | Runs                                   | Isolation                                 | Communication                                             | Best for                                                                        |
-| ---------------- | -------------------------------------- | ----------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `child_process`  | A separate OS process (any executable) | Fully isolated, separate memory           | stdio streams, or IPC channel with `fork()`               | Running external programs, or another Node.js script that needs its own process |
-| `worker_threads` | A separate thread, same OS process     | Isolated by default, memory can be shared | `postMessage()`, or shared memory via `SharedArrayBuffer` | CPU-bound JavaScript that would otherwise block the event loop                  |
-| `cluster`        | Multiple full Node.js processes        | Fully isolated, separate memory           | IPC channel (built on `child_process`)                    | Scaling a network server (typically HTTP) across CPU cores                      |
+|                  | Runs               | Memory    | Talks via                | Best for                      |
+| ---------------- | ------------------ | --------- | ------------------------ | ----------------------------- |
+| `child_process`  | Separate process   | Isolated  | stdio, or IPC (`fork()`) | Running external programs     |
+| `worker_threads` | Separate thread    | Shareable | `postMessage()`          | CPU-bound JS work             |
+| `cluster`        | Multiple processes | Isolated  | IPC                      | Scaling a server across cores |
 
 A useful way to tell them apart: `cluster` is built on top of `child_process` specifically to solve the "scale a server across cores" problem, while `worker_threads` exists to solve the "run CPU-heavy code without blocking" problem without paying the cost of a whole new process.
 
@@ -29,12 +29,12 @@ Use `child_process` when you need to run another program — a shell command, a 
 
 ### `spawn`, `exec`, `execFile`, and `fork`
 
-| Method       | Description                                                                             | Use case                                                          |
-| ------------ | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `spawn()`    | Launches a command and exposes stdout/stderr as streams                                 | Long-running processes, or output too large to buffer             |
-| `exec()`     | Runs a command through a shell and buffers the full output                              | Short commands with small output                                  |
-| `execFile()` | Like `exec()`, but runs a file directly without spawning a shell                        | Running a known binary/script safely, without shell interpolation |
-| `fork()`     | A specialized `spawn()` for running another Node.js module, with a built-in IPC channel | Parent/child communication between two Node.js processes          |
+| Method       | Description                                  | Use case                       |
+| ------------ | -------------------------------------------- | ------------------------------ |
+| `spawn()`    | Streams stdout/stderr                        | Long-running, large output     |
+| `exec()`     | Buffers full output via a shell              | Short commands, small output   |
+| `execFile()` | Like `exec()`, no shell                      | Running a known binary safely  |
+| `fork()`     | `spawn()` + built-in IPC for Node.js modules | Parent/child Node.js messaging |
 
 `exec()` buffers the child's entire stdout/stderr in memory and only calls back once the process exits, with the result capped at 1 MiB (`maxBuffer`) by default — trying to capture a large or unbounded output this way will truncate it and terminate the child. `execFile()` avoids spawning a shell entirely, which also sidesteps shell-injection risks when part of the command comes from user input.
 
@@ -93,12 +93,12 @@ process.on('message', msg => {
 
 `worker_threads` was added to let you run JavaScript in parallel, in threads within the _same_ process, specifically to move CPU-bound work off the main thread without blocking it. Unlike `child_process`, workers share the same process — no OS-level process to spin up, and no fully separate memory space.
 
-|                  | Worker Threads                                         | Child Process                     |
-| ---------------- | ------------------------------------------------------ | --------------------------------- |
-| Context          | Same process                                           | Separate process                  |
-| Memory           | Isolated by default; can share via `SharedArrayBuffer` | Fully isolated                    |
-| Startup overhead | Low                                                    | Higher                            |
-| Communication    | `postMessage()` (structured clone, fast)               | stdio or IPC (serialized, slower) |
+|                  | Worker Threads                    | Child Process         |
+| ---------------- | --------------------------------- | --------------------- |
+| Context          | Same process                      | Separate process      |
+| Memory           | Shareable via `SharedArrayBuffer` | Isolated              |
+| Startup overhead | Low                               | Higher                |
+| Communication    | `postMessage()` (fast)            | stdio or IPC (slower) |
 
 ### Example: offloading CPU-bound work
 
@@ -106,7 +106,9 @@ process.on('message', msg => {
 // main.js
 const { Worker } = require('node:worker_threads');
 
-const worker = new Worker('./hash-worker.js', { workerData: 'user-password' });
+const worker = new Worker('./hash-worker.js', {
+  workerData: 'user-password',
+});
 worker.on('message', hash => console.log('Computed hash:', hash));
 worker.on('error', err => console.error('Worker failed:', err));
 ```
