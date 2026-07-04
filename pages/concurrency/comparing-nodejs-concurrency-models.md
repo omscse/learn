@@ -152,6 +152,12 @@ if (cluster.isPrimary) {
   }
 
   cluster.on('exit', (worker, code, signal) => {
+    if (worker.exitedAfterDisconnect) {
+      // A voluntary exit (e.g. worker.disconnect() or cluster.disconnect())
+      // — don't respawn.
+      return;
+    }
+
     console.log(`Worker ${worker.process.pid} died, restarting`);
     cluster.fork();
   });
@@ -165,7 +171,7 @@ if (cluster.isPrimary) {
 }
 ```
 
-The primary process (`cluster.isPrimary`) forks one worker per core and restarts any worker that exits unexpectedly. Each worker (`cluster.isWorker`) runs your normal server code, unaware that it's one of several.
+The primary process (`cluster.isPrimary`) forks one worker per core and restarts any worker that exits unexpectedly. Each worker (`cluster.isWorker`) runs your normal server code, unaware that it's one of several. The `worker.exitedAfterDisconnect` flag distinguishes a voluntary exit (e.g. during a graceful shutdown via `worker.disconnect()` or `cluster.disconnect()`) from a crash — without checking it, a deliberate shutdown would keep spawning new workers instead of winding down.
 
 ### How the workers share one port
 
@@ -178,7 +184,7 @@ Rather than relying on an OS-level mechanism, the primary process itself distrib
 ### Things to watch for
 
 - Workers are separate processes, so **they don't share memory**. In-memory sessions, caches, or rate limiters won't be visible across workers — use an external store like Redis for anything that needs to be shared.
-- Always handle a worker's `'exit'` event and decide whether to restart it; an unhandled crash silently reduces your server's capacity.
+- Always handle a worker's `'exit'` event and decide whether to restart it; an unhandled crash silently reduces your server's capacity. Check `worker.exitedAfterDisconnect` so a graceful shutdown doesn't get treated as a crash and endlessly respawn workers.
 - In production, most teams use a process manager (PM2, systemd, or a container orchestrator) instead of hand-rolling restart/reload logic with `cluster` directly.
 
 ## Choosing between them
