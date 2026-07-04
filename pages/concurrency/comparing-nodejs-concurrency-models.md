@@ -2,7 +2,7 @@
 authors: omscse
 ---
 
-# Comparing Node.js concurrency models: Child Process, Worker Threads, and Cluster
+# Comparing Node.js concurrency models
 
 Node.js runs your JavaScript on a single thread, driven by the [event loop](/learn/asynchronous-work/event-loop-timers-and-nexttick). That model is great for I/O-bound work — reading files, querying a database, handling HTTP requests — because Node hands off the waiting to the operating system and keeps the thread free.
 
