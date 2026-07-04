@@ -100,8 +100,7 @@ process.on('message', msg => {
 
 ### Example: offloading CPU-bound work
 
-```cjs
-// main.js
+```cjs displayName="main.js"
 const { Worker } = require('node:worker_threads');
 
 const worker = new Worker('./hash-worker.js', {
@@ -111,8 +110,7 @@ worker.on('message', hash => console.log('Computed hash:', hash));
 worker.on('error', err => console.error('Worker failed:', err));
 ```
 
-```cjs
-// hash-worker.js
+```cjs displayName="hash-worker.js"
 const { parentPort, workerData } = require('node:worker_threads');
 const { scryptSync, randomBytes } = require('node:crypto');
 
