@@ -64,8 +64,7 @@ child.on('close', code => console.log(`Process exited with code ${code}`));
 
 ### Example: talking to another Node.js process with `fork()`
 
-```cjs
-// parent.js
+```cjs displayName="parent.js"
 const { fork } = require('node:child_process');
 
 const child = fork('./child.js');
@@ -73,8 +72,7 @@ child.send({ task: 'start', data: 42 });
 child.on('message', result => console.log('Result from child:', result));
 ```
 
-```cjs
-// child.js
+```cjs displayName="child.js"
 process.on('message', msg => {
   console.log('Received from parent:', msg);
   process.send('done');
